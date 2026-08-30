@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Share2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import Overview from '../components/project/Overview'
 import FilesPanel from '../components/project/FilesPanel'
@@ -12,14 +12,17 @@ import DatabasePanel from '../components/project/DatabasePanel'
 import AiToolsPanel from '../components/project/AiToolsPanel'
 import NotesPanel from '../components/project/NotesPanel'
 import ActivityPanel from '../components/project/ActivityPanel'
+import TeamPanel from '../components/project/TeamPanel'
+import ShareModal from '../components/project/ShareModal'
 
-const TABS = ['Overview', 'Files', 'URLs', 'Secrets', 'APIs', 'GitHub', 'Database', 'AI', 'Notes', 'Activity']
+const TABS = ['Overview', 'Files', 'URLs', 'Secrets', 'APIs', 'GitHub', 'Database', 'AI', 'Notes', 'Team', 'Activity']
 
 export default function ProjectDetail() {
   const { id } = useParams()
   const [params, setParams] = useSearchParams()
   const [project, setProject] = useState(null)
   const [stats, setStats] = useState({ files: null, secrets: null, urls: null, apis: null })
+  const [shareOpen, setShareOpen] = useState(false)
   const tab = params.get('tab') || 'Overview'
 
   async function load() {
@@ -43,7 +46,12 @@ export default function ProjectDetail() {
       <Link to="/projects" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-dim)', marginBottom: 10 }}>
         <ChevronLeft size={14} /> Projects
       </Link>
-      <h1 style={{ fontSize: 20, margin: '0 0 12px' }}>{project.name}</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+        <h1 style={{ fontSize: 20, margin: '0 0 12px' }}>{project.name}</h1>
+        <button className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setShareOpen(true)}>
+          <Share2 size={14} /> Share
+        </button>
+      </div>
 
       <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20, overflowX: 'auto' }}>
         {TABS.map((t) => (
@@ -75,7 +83,10 @@ export default function ProjectDetail() {
       {tab === 'Database' && <DatabasePanel projectId={id} onSwitchTab={(t) => setParams({ tab: t })} />}
       {tab === 'AI' && <AiToolsPanel projectId={id} />}
       {tab === 'Notes' && <NotesPanel projectId={id} />}
+      {tab === 'Team' && <TeamPanel projectId={id} ownerId={project.owner_id} />}
       {tab === 'Activity' && <ActivityPanel projectId={id} />}
+
+      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} projectId={id} />
     </div>
   )
 }

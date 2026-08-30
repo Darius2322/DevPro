@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, FolderKanban, Link2, KeyRound, Settings, LogOut, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
+import CommandPalette from './CommandPalette'
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -57,11 +58,16 @@ export default function Layout() {
         <div style={{ flex: 1 }} />
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, fontSize: 12, color: 'var(--text-faint)' }}>
           <div style={{ marginBottom: 8, wordBreak: 'break-all' }}>{user?.email}</div>
+          <div style={{ marginBottom: 8, textAlign: 'center' }}>
+            Press <kbd style={{ border: '1px solid var(--border-strong)', borderRadius: 4, padding: '1px 5px' }}>⌘K</kbd> for commands
+          </div>
           <button className="btn-ghost" style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }} onClick={signOut}>
             <LogOut size={14} /> Sign out
           </button>
         </div>
       </aside>
+
+      <CommandPalette />
 
       <main className="scrollbar-thin" style={{ flex: 1, overflowY: 'auto', paddingBottom: 72 }}>
         <div style={{ maxWidth: 1080, margin: '0 auto', padding: '24px 20px 40px' }}>

@@ -9,12 +9,14 @@ import ProjectDetail from './pages/ProjectDetail'
 import UrlsPage from './pages/UrlsPage'
 import SecretsPage from './pages/SecretsPage'
 import Settings from './pages/Settings'
+import SharePage from './pages/SharePage'
 
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/share/:token" element={<SharePage />} />
       <Route
         element={
           <ProtectedRoute>

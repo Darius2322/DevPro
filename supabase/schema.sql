@@ -12,6 +12,7 @@ create extension if not exists pgcrypto;
 -- ─────────────────────────────────────────────────────────────
 create table profiles (
   id uuid primary key references auth.users (id) on delete cascade,
+  email text,
   full_name text,
   avatar_url text,
   created_at timestamptz not null default now()
@@ -20,7 +21,7 @@ create table profiles (
 create function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id) values (new.id);
+  insert into public.profiles (id, email) values (new.id, new.email);
   return new;
 end;
 $$ language plpgsql security definer;
@@ -30,12 +31,8 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 alter table profiles enable row level security;
-
-create policy "profiles: read own" on profiles
-  for select using (auth.uid() = id);
-
-create policy "profiles: update own" on profiles
-  for update using (auth.uid() = id);
+-- Policies for `profiles` are created further down, after `project_members`
+-- exists (the co-member policy needs to reference it).
 
 -- ─────────────────────────────────────────────────────────────
 -- PROJECTS
@@ -84,6 +81,50 @@ $$ language sql stable security definer;
 
 alter table projects enable row level security;
 alter table project_members enable row level security;
+
+-- Deferred from the PROFILES section above: needs project_members + has_project_access.
+create policy "profiles: read own or co-member" on profiles
+  for select using (
+    id = auth.uid()
+    or exists (select 1 from project_members pm where pm.user_id = profiles.id and public.has_project_access(pm.project_id))
+    or exists (select 1 from projects p where p.owner_id = profiles.id and public.has_project_access(p.id))
+  );
+
+create policy "profiles: update own" on profiles
+  for update using (auth.uid() = id);
+
+-- Invite a collaborator by email. Runs with elevated privileges (security
+-- definer) only to look up the target user's id in auth.users — it still
+-- enforces that the CALLER is the project owner or an Admin member before
+-- doing anything, and does nothing else privileged.
+create function public.invite_member_by_email(p_project_id uuid, p_email text, p_role text)
+returns void as $$
+declare
+  target_user_id uuid;
+begin
+  if p_role not in ('Admin','Editor','Viewer') then
+    raise exception 'invalid_role';
+  end if;
+
+  if not (
+    exists (select 1 from projects where id = p_project_id and owner_id = auth.uid())
+    or exists (select 1 from project_members where project_id = p_project_id and user_id = auth.uid() and role = 'Admin')
+  ) then
+    raise exception 'forbidden';
+  end if;
+
+  select id into target_user_id from auth.users where lower(email) = lower(p_email);
+  if target_user_id is null then
+    raise exception 'no_such_user';
+  end if;
+
+  insert into project_members (project_id, user_id, role)
+  values (p_project_id, target_user_id, p_role)
+  on conflict (project_id, user_id) do update set role = excluded.role;
+end;
+$$ language plpgsql security definer set search_path = public, auth;
+
+grant execute on function public.invite_member_by_email(uuid, text, text) to authenticated;
 
 create policy "projects: select if member or owner" on projects
   for select using (public.has_project_access(id));
@@ -376,6 +417,51 @@ create policy "notes: insert if project access" on notes for insert with check (
 create policy "notes: update if project access" on notes for update using (public.has_project_access(project_id));
 create policy "notes: delete if project access" on notes for delete using (public.has_project_access(project_id));
 create trigger notes_touch before update on notes for each row execute procedure public.touch_updated_at();
+-- ─────────────────────────────────────────────────────────────
+-- SHARES  (public read-only links. Secrets and Notes are NEVER included —
+-- there is deliberately no toggle for them. Password hashing and the actual
+-- link-serving logic live in the share-manage Edge Function, never here.)
+-- ─────────────────────────────────────────────────────────────
+create table shares (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  created_by uuid not null references auth.users (id),
+  token text not null unique,
+  include_overview boolean not null default true,
+  include_files boolean not null default false,
+  include_urls boolean not null default false,
+  include_apis boolean not null default false,
+  password_hash text,
+  password_salt text,
+  expires_at timestamptz,
+  revoked boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index shares_project_idx on shares (project_id);
+create index shares_token_idx on shares (token);
+
+alter table shares enable row level security;
+
+-- Only project owner/members ever query this table directly (to list/revoke
+-- their own shares). Anonymous visitors to a share link never query this
+-- table with their own credentials — they go through the share-manage Edge
+-- Function, which uses the service-role key to validate the token/password.
+create policy "shares: select if project access" on shares
+  for select using (public.has_project_access(project_id));
+
+create policy "shares: insert if project access" on shares
+  for insert with check (public.has_project_access(project_id) and created_by = auth.uid());
+
+create policy "shares: update (revoke) if project access" on shares
+  for update using (public.has_project_access(project_id));
+
+create policy "shares: delete if project access" on shares
+  for delete using (public.has_project_access(project_id));
+
+-- ─────────────────────────────────────────────────────────────
+-- STORAGE: private bucket + policies for project files
+-- ─────────────────────────────────────────────────────────────
 insert into storage.buckets (id, name, public) values ('project-files', 'project-files', false)
   on conflict (id) do nothing;
 

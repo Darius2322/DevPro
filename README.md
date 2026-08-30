@@ -14,8 +14,8 @@ text, JetBrains Mono for values/code.
 
 - Email/password auth (Supabase Auth), protected routes, sign-out-everywhere
 - Projects: create, list, search/filter/sort, pin, archive-aware queries
-- Project detail with ten tabs: Overview, Files, URLs, Secrets, APIs, GitHub,
-  Database, AI, Notes, Activity
+- Project detail with eleven tabs: Overview, Files, URLs, Secrets, APIs,
+  GitHub, Database, AI, Notes, Team, Activity
 - Files: drag-and-drop upload, download via short-lived signed URLs, delete —
   stored in a **private** Supabase Storage bucket, never public
 - **Secrets Vault**: values are encrypted server-side (AES-GCM) inside a
@@ -31,22 +31,29 @@ text, JetBrains Mono for values/code.
 - **AI Tools**: a dated log of which AI tool was used for what, with
   filtering by provider — tracking only, never stores AI account passwords
 - **Notes**: freeform per-project notes
+- **Team**: invite collaborators by email (Admin/Editor/Viewer roles),
+  remove members — enforced by RLS via `project_members`, not just hidden
+  buttons
+- **Share links**: generate a read-only public link with an optional
+  password and expiration, choosing which sections to include. Secrets and
+  private notes are never includable — there's no toggle for them, by
+  design — and a Supabase Edge Function (`share-manage`) validates the
+  token/password server-side before returning anything
 - **Activity**: per-project timeline grouped by day, filterable by resource
   type — metadata only, never secret values or file contents
 - Global URLs and Secrets pages (across all projects) plus per-project views
 - Dashboard with live counts + recent activity feed
+- Command palette (⌘K / Ctrl+K) for quick navigation and actions
 - Responsive shell: sidebar on desktop, bottom nav on mobile
 - PWA manifest + basic install support (offline shell only — no caching of
   API/storage responses, by design, so nothing sensitive is cached)
 
 ## Not yet built
 
-Sharing/share-links, notifications, real-time collaboration, command palette,
-import/export, 2FA/MFA, folders inside file storage, file preview pane,
-project role management UI (the `project_members`/RLS plumbing exists, but
-there's no screen yet to invite/manage collaborators). These follow the same
-panel+table+RLS pattern already established — happy to build any of them
-next.
+Notifications, real-time collaboration (live updates without a refresh),
+import/export, 2FA/MFA, folders inside file storage, file preview pane.
+These follow the same panel+table+RLS pattern already established — happy
+to build any of them next.
 
 ## Setup
 
@@ -55,9 +62,10 @@ next.
    This creates all tables (projects, files, secrets, urls, apis,
    github_repositories, databases, ai_usage, notes, activity_logs), RLS
    policies, and the private `project-files` storage bucket.
-3. **Deploy the secrets Edge Function**:
+3. **Deploy the Edge Functions**:
    ```bash
    supabase functions deploy secrets-vault
+   supabase functions deploy share-manage
    supabase secrets set SECRETS_ENCRYPTION_KEY=$(openssl rand -base64 32)
    ```
    The function also needs `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
