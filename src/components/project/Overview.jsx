@@ -29,7 +29,8 @@ export default function Overview({ project, stats }) {
         {[
           ['Files', stats.files],
           ['Secrets', stats.secrets],
-          ['URLs', stats.urls]
+          ['URLs', stats.urls],
+          ['APIs', stats.apis]
         ].map(([label, value]) => (
           <div key={label} className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 20, fontWeight: 600 }}>{value ?? '—'}</div>

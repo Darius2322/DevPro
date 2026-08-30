@@ -254,8 +254,128 @@ create policy "activity_logs: insert own" on activity_logs
   for insert with check (user_id = auth.uid());
 
 -- ─────────────────────────────────────────────────────────────
--- STORAGE: private bucket + policies for project files
+-- APIS
 -- ─────────────────────────────────────────────────────────────
+create table apis (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  name text not null,
+  base_url text,
+  endpoint text,
+  method text not null default 'GET' check (method in ('GET','POST','PUT','PATCH','DELETE')),
+  auth_type text,
+  api_key_secret_id uuid references secrets (id) on delete set null,
+  headers text,
+  parameters text,
+  description text,
+  documentation_url text,
+  environment text not null default 'Production',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index apis_project_idx on apis (project_id);
+alter table apis enable row level security;
+
+create policy "apis: select if project access" on apis for select using (public.has_project_access(project_id));
+create policy "apis: insert if project access" on apis for insert with check (public.has_project_access(project_id));
+create policy "apis: update if project access" on apis for update using (public.has_project_access(project_id));
+create policy "apis: delete if project access" on apis for delete using (public.has_project_access(project_id));
+create trigger apis_touch before update on apis for each row execute procedure public.touch_updated_at();
+
+-- ─────────────────────────────────────────────────────────────
+-- GITHUB  (one record per project — the token itself lives in `secrets`)
+-- ─────────────────────────────────────────────────────────────
+create table github_repositories (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null unique references projects (id) on delete cascade,
+  repository_url text,
+  default_branch text default 'main',
+  github_account text,
+  organization text,
+  token_secret_id uuid references secrets (id) on delete set null,
+  actions_notes text,
+  deployment_notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table github_repositories enable row level security;
+
+create policy "github_repositories: select if project access" on github_repositories for select using (public.has_project_access(project_id));
+create policy "github_repositories: insert if project access" on github_repositories for insert with check (public.has_project_access(project_id));
+create policy "github_repositories: update if project access" on github_repositories for update using (public.has_project_access(project_id));
+create policy "github_repositories: delete if project access" on github_repositories for delete using (public.has_project_access(project_id));
+create trigger github_repositories_touch before update on github_repositories for each row execute procedure public.touch_updated_at();
+
+-- ─────────────────────────────────────────────────────────────
+-- DATABASE / SCHEMA  (one record per project — SQL files themselves go
+-- through the existing `files` table / Storage bucket)
+-- ─────────────────────────────────────────────────────────────
+create table databases (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null unique references projects (id) on delete cascade,
+  provider text,
+  database_url text,
+  project_ref text,
+  schema_notes text,
+  rls_notes text,
+  edge_functions_notes text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table databases enable row level security;
+
+create policy "databases: select if project access" on databases for select using (public.has_project_access(project_id));
+create policy "databases: insert if project access" on databases for insert with check (public.has_project_access(project_id));
+create policy "databases: update if project access" on databases for update using (public.has_project_access(project_id));
+create policy "databases: delete if project access" on databases for delete using (public.has_project_access(project_id));
+create trigger databases_touch before update on databases for each row execute procedure public.touch_updated_at();
+
+-- ─────────────────────────────────────────────────────────────
+-- AI USAGE  (tracking only — never store AI account passwords here)
+-- ─────────────────────────────────────────────────────────────
+create table ai_usage (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  provider text not null,
+  account_label text,
+  purpose text,
+  used_at date not null default current_date,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+create index ai_usage_project_idx on ai_usage (project_id, used_at desc);
+alter table ai_usage enable row level security;
+
+create policy "ai_usage: select if project access" on ai_usage for select using (public.has_project_access(project_id));
+create policy "ai_usage: insert if project access" on ai_usage for insert with check (public.has_project_access(project_id));
+create policy "ai_usage: delete if project access" on ai_usage for delete using (public.has_project_access(project_id));
+
+-- ─────────────────────────────────────────────────────────────
+-- NOTES
+-- ─────────────────────────────────────────────────────────────
+create table notes (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects (id) on delete cascade,
+  created_by uuid not null references auth.users (id),
+  title text not null,
+  body text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index notes_project_idx on notes (project_id);
+alter table notes enable row level security;
+
+create policy "notes: select if project access" on notes for select using (public.has_project_access(project_id));
+create policy "notes: insert if project access" on notes for insert with check (public.has_project_access(project_id));
+create policy "notes: update if project access" on notes for update using (public.has_project_access(project_id));
+create policy "notes: delete if project access" on notes for delete using (public.has_project_access(project_id));
+create trigger notes_touch before update on notes for each row execute procedure public.touch_updated_at();
 insert into storage.buckets (id, name, public) values ('project-files', 'project-files', false)
   on conflict (id) do nothing;
 

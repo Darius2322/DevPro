@@ -10,39 +10,51 @@ Stack: **React (Vite) + React Router + Supabase** (Postgres, Auth, Storage,
 Edge Functions). Dark, restrained developer-tool UI — Inter for interface
 text, JetBrains Mono for values/code.
 
-## What's built in this pass
+## What's built
 
 - Email/password auth (Supabase Auth), protected routes, sign-out-everywhere
 - Projects: create, list, search/filter/sort, pin, archive-aware queries
-- Project detail with Overview / Files / URLs / Secrets tabs
+- Project detail with ten tabs: Overview, Files, URLs, Secrets, APIs, GitHub,
+  Database, AI, Notes, Activity
 - Files: drag-and-drop upload, download via short-lived signed URLs, delete —
   stored in a **private** Supabase Storage bucket, never public
 - **Secrets Vault**: values are encrypted server-side (AES-GCM) inside a
   Supabase Edge Function. The browser and the database only ever see
   ciphertext + metadata. Reveal and copy both require re-entering your
   password first; revealed values auto-hide after 20 seconds
+- **APIs**: endpoint/method/auth-type tracking; API keys are referenced from
+  the Secrets Vault rather than duplicated
+- **GitHub**: repo URL, branch, account, org, Actions/deployment notes;
+  the access token is referenced from the Secrets Vault, never stored here
+- **Database**: provider, connection URL, project ref, schema/RLS/Edge
+  Function notes — actual SQL files live in the Files tab
+- **AI Tools**: a dated log of which AI tool was used for what, with
+  filtering by provider — tracking only, never stores AI account passwords
+- **Notes**: freeform per-project notes
+- **Activity**: per-project timeline grouped by day, filterable by resource
+  type — metadata only, never secret values or file contents
 - Global URLs and Secrets pages (across all projects) plus per-project views
-- Activity log (metadata only — never secret values or file contents)
 - Dashboard with live counts + recent activity feed
 - Responsive shell: sidebar on desktop, bottom nav on mobile
 - PWA manifest + basic install support (offline shell only — no caching of
   API/storage responses, by design, so nothing sensitive is cached)
 
-## Not yet built (by design, per our phased plan)
+## Not yet built
 
-APIs manager, GitHub records, Database/schema section, AI-tool tracking,
-sharing/share-links, notifications, real-time collaboration, command palette,
-full audit-log timeline UI, import/export, 2FA/MFA, folders inside file
-storage, file preview pane. These slot into the same patterns already
-established (a `*Panel` component + a table + RLS-protected table) — happy to
-build any of them next.
+Sharing/share-links, notifications, real-time collaboration, command palette,
+import/export, 2FA/MFA, folders inside file storage, file preview pane,
+project role management UI (the `project_members`/RLS plumbing exists, but
+there's no screen yet to invite/manage collaborators). These follow the same
+panel+table+RLS pattern already established — happy to build any of them
+next.
 
 ## Setup
 
 1. **Create a Supabase project** at supabase.com.
 2. **Run the schema**: open the SQL editor and run `supabase/schema.sql`.
-   This creates all tables, RLS policies, and the private `project-files`
-   storage bucket.
+   This creates all tables (projects, files, secrets, urls, apis,
+   github_repositories, databases, ai_usage, notes, activity_logs), RLS
+   policies, and the private `project-files` storage bucket.
 3. **Deploy the secrets Edge Function**:
    ```bash
    supabase functions deploy secrets-vault

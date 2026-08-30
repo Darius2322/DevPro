@@ -6,25 +6,32 @@ import Overview from '../components/project/Overview'
 import FilesPanel from '../components/project/FilesPanel'
 import UrlsPanel from '../components/project/UrlsPanel'
 import SecretsPanel from '../components/project/SecretsPanel'
+import ApisPanel from '../components/project/ApisPanel'
+import GithubPanel from '../components/project/GithubPanel'
+import DatabasePanel from '../components/project/DatabasePanel'
+import AiToolsPanel from '../components/project/AiToolsPanel'
+import NotesPanel from '../components/project/NotesPanel'
+import ActivityPanel from '../components/project/ActivityPanel'
 
-const TABS = ['Overview', 'Files', 'URLs', 'Secrets']
+const TABS = ['Overview', 'Files', 'URLs', 'Secrets', 'APIs', 'GitHub', 'Database', 'AI', 'Notes', 'Activity']
 
 export default function ProjectDetail() {
   const { id } = useParams()
   const [params, setParams] = useSearchParams()
   const [project, setProject] = useState(null)
-  const [stats, setStats] = useState({ files: null, secrets: null, urls: null })
+  const [stats, setStats] = useState({ files: null, secrets: null, urls: null, apis: null })
   const tab = params.get('tab') || 'Overview'
 
   async function load() {
     const { data } = await supabase.from('projects').select('*').eq('id', id).single()
     setProject(data)
-    const [{ count: files }, { count: secrets }, { count: urls }] = await Promise.all([
+    const [{ count: files }, { count: secrets }, { count: urls }, { count: apis }] = await Promise.all([
       supabase.from('files').select('*', { count: 'exact', head: true }).eq('project_id', id),
       supabase.from('secrets').select('*', { count: 'exact', head: true }).eq('project_id', id),
-      supabase.from('urls').select('*', { count: 'exact', head: true }).eq('project_id', id)
+      supabase.from('urls').select('*', { count: 'exact', head: true }).eq('project_id', id),
+      supabase.from('apis').select('*', { count: 'exact', head: true }).eq('project_id', id)
     ])
-    setStats({ files, secrets, urls })
+    setStats({ files, secrets, urls, apis })
   }
 
   useEffect(() => { load() }, [id])
@@ -63,6 +70,12 @@ export default function ProjectDetail() {
       {tab === 'Files' && <FilesPanel projectId={id} />}
       {tab === 'URLs' && <UrlsPanel projectId={id} />}
       {tab === 'Secrets' && <SecretsPanel projectId={id} />}
+      {tab === 'APIs' && <ApisPanel projectId={id} />}
+      {tab === 'GitHub' && <GithubPanel projectId={id} />}
+      {tab === 'Database' && <DatabasePanel projectId={id} onSwitchTab={(t) => setParams({ tab: t })} />}
+      {tab === 'AI' && <AiToolsPanel projectId={id} />}
+      {tab === 'Notes' && <NotesPanel projectId={id} />}
+      {tab === 'Activity' && <ActivityPanel projectId={id} />}
     </div>
   )
 }
