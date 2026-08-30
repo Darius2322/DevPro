@@ -14,14 +14,24 @@ create table profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text,
   full_name text,
+  phone text,
   avatar_url text,
+  github_username text,
+  profession text,
+  onboarding_completed boolean not null default false,
   created_at timestamptz not null default now()
 );
 
 create function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email) values (new.id, new.email);
+  insert into public.profiles (id, email, full_name, phone)
+  values (
+    new.id,
+    new.email,
+    new.raw_user_meta_data ->> 'full_name',
+    new.raw_user_meta_data ->> 'phone'
+  );
   return new;
 end;
 $$ language plpgsql security definer;

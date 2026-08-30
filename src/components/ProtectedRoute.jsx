@@ -5,7 +5,7 @@ import { mfa } from '../lib/mfa'
 import MfaChallenge from './MfaChallenge'
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   const [mfaState, setMfaState] = useState('checking') // 'checking' | 'ok' | 'required'
   const [factorId, setFactorId] = useState(null)
 
@@ -38,6 +38,12 @@ export default function ProtectedRoute({ children }) {
 
   if (mfaState === 'required' && factorId) {
     return <MfaChallenge factorId={factorId} onVerified={() => setMfaState('ok')} />
+  }
+
+  // profile can briefly be null right after sign-in while it's still
+  // loading — only redirect once we actually know it's incomplete.
+  if (profile && profile.onboarding_completed === false) {
+    return <Navigate to="/onboarding" replace />
   }
 
   return children

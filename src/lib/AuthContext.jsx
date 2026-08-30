@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
     profile,
     loading: session === undefined,
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-    signUp: (email, password) => supabase.auth.signUp({ email, password }),
+    signUp: (email, password, metadata) => supabase.auth.signUp({ email, password, options: { data: metadata } }),
     signOut: () => supabase.auth.signOut(),
     signOutAllDevices: () => supabase.auth.signOut({ scope: 'global' }),
     resetPassword: (email) =>

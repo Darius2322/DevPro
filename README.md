@@ -12,7 +12,9 @@ text, JetBrains Mono for values/code.
 
 ## What's built
 
-- Email/password auth (Supabase Auth), protected routes, sign-out-everywhere
+- Email/password auth (Supabase Auth) with name + phone collected at signup,
+  protected routes, sign-out-everywhere, and a skippable one-time onboarding
+  step (GitHub username, profession) shown once after first sign-in
 - Projects: create, list, search/filter/sort, pin, archive-aware queries
 - Project detail with eleven tabs: Overview, Files, URLs, Secrets, APIs,
   GitHub, Database, AI, Notes, Team, Activity
@@ -83,6 +85,12 @@ under Authentication — there's no in-app recovery path yet).
    the daily secret-expiry check (`pg_cron` — enable that extension under
    Database > Extensions if the schema run errors on it), and adds the
    realtime tables to the `supabase_realtime` publication.
+
+   **Already have a DevPro project running?** Don't re-run the full
+   `schema.sql` — it'll error on tables that already exist. Instead run
+   `supabase/migrations/002_profile_onboarding.sql`, which just adds the new
+   profile fields and updates the signup trigger. It's safe to run more than
+   once.
 3. **Deploy the Edge Functions**:
    ```bash
    supabase functions deploy secrets-vault
