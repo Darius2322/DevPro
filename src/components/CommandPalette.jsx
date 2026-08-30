@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, FolderPlus, Upload, KeyRound, Link2, LayoutDashboard, FolderKanban, Settings, LogOut } from 'lucide-react'
+import { Search, FolderPlus, Upload, KeyRound, Link2, LayoutDashboard, FolderKanban, Settings, LogOut, Bot, Plug, FolderOpen, User } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 
 export default function CommandPalette() {
@@ -16,6 +16,10 @@ export default function CommandPalette() {
     { label: 'Add URL', icon: Link2, run: () => navigate('/urls?new=1') },
     { label: 'Add Secret', icon: KeyRound, run: () => navigate('/secrets?new=1') },
     { label: 'Upload File (open a project first)', icon: Upload, run: () => navigate('/projects') },
+    { label: 'AI Accounts', icon: Bot, run: () => navigate('/ai-accounts') },
+    { label: 'Connections', icon: Plug, run: () => navigate('/connections') },
+    { label: 'Materials', icon: FolderOpen, run: () => navigate('/materials') },
+    { label: 'Open Profile', icon: User, run: () => navigate('/profile') },
     { label: 'Open Settings', icon: Settings, run: () => navigate('/settings') },
     { label: 'Sign out', icon: LogOut, run: () => signOut() }
   ], [navigate, signOut])

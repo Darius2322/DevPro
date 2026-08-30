@@ -22,7 +22,7 @@ export default function Projects() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [showArchived, setShowArchived] = useState(false)
   const [modalOpen, setModalOpen] = useState(params.get('new') === '1')
-  const [form, setForm] = useState({ name: '', description: '', status: 'Planning', tech_stack: '', repository_url: '', production_url: '' })
+  const [form, setForm] = useState({ name: '', description: '', status: 'Planning', tech_stack: '', languages: '', databases_used: '', frameworks: '', sdlc_methodology: '', repository_url: '', production_url: '' })
   const [saving, setSaving] = useState(false)
   const [importing, setImporting] = useState(false)
   const importInputRef = useRef(null)
@@ -46,13 +46,24 @@ export default function Projects() {
     })
   }, [projects, statusFilter, query])
 
+  function toArray(csv) {
+    return csv.split(',').map((s) => s.trim()).filter(Boolean)
+  }
+
   async function createProject(e) {
     e.preventDefault()
     setSaving(true)
     const slug = form.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
     const { data, error } = await supabase
       .from('projects')
-      .insert({ ...form, slug, owner_id: user.id })
+      .insert({
+        ...form,
+        languages: toArray(form.languages),
+        databases_used: toArray(form.databases_used),
+        frameworks: toArray(form.frameworks),
+        slug,
+        owner_id: user.id
+      })
       .select()
       .single()
     setSaving(false)
@@ -165,8 +176,27 @@ export default function Projects() {
             </select>
           </div>
           <div className="field">
-            <label>Technology stack</label>
+            <label>SDLC methodology</label>
+            <select value={form.sdlc_methodology} onChange={(e) => setForm({ ...form, sdlc_methodology: e.target.value })}>
+              <option value="">Not set</option>
+              {['Agile / Scrum', 'Kanban', 'Waterfall', 'Lean', 'DevOps', 'Other'].map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>Technology stack (short summary)</label>
             <input placeholder="React, Supabase, Vercel" value={form.tech_stack} onChange={(e) => setForm({ ...form, tech_stack: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Languages (comma-separated)</label>
+            <input placeholder="JavaScript, Python" value={form.languages} onChange={(e) => setForm({ ...form, languages: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Databases (comma-separated)</label>
+            <input placeholder="PostgreSQL, Redis" value={form.databases_used} onChange={(e) => setForm({ ...form, databases_used: e.target.value })} />
+          </div>
+          <div className="field">
+            <label>Frameworks (comma-separated)</label>
+            <input placeholder="Next.js, Tailwind" value={form.frameworks} onChange={(e) => setForm({ ...form, frameworks: e.target.value })} />
           </div>
           <div className="field">
             <label>Repository URL</label>

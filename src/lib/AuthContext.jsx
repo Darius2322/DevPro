@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
+import { recordDeviceSeen } from './deviceTracking'
 
 const AuthContext = createContext(null)
 
@@ -26,6 +27,7 @@ export function AuthProvider({ children }) {
       .eq('id', session.user.id)
       .single()
       .then(({ data }) => setProfile(data ?? null))
+    recordDeviceSeen(session.user.id)
   }, [session?.user?.id])
 
   const value = {

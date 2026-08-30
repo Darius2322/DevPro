@@ -11,6 +11,10 @@ import SecretsPage from './pages/SecretsPage'
 import Settings from './pages/Settings'
 import SharePage from './pages/SharePage'
 import Onboarding from './pages/Onboarding'
+import Profile from './pages/Profile'
+import AiAccounts from './pages/AiAccounts'
+import Connections from './pages/Connections'
+import Materials from './pages/Materials'
 
 export default function App() {
   return (
@@ -31,6 +35,10 @@ export default function App() {
         <Route path="/projects/:id" element={<ProjectDetail />} />
         <Route path="/urls" element={<UrlsPage />} />
         <Route path="/secrets" element={<SecretsPage />} />
+        <Route path="/ai-accounts" element={<AiAccounts />} />
+        <Route path="/connections" element={<Connections />} />
+        <Route path="/materials" element={<Materials />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
     </Routes>

@@ -20,6 +20,23 @@
   --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 }
 
+html[data-theme='light'] {
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-raised: #f0f1f3;
+  --border: #e2e3e7;
+  --border-strong: #cdced4;
+  --text: #16181d;
+  --text-dim: #565a63;
+  --text-faint: #8a8e97;
+  --accent: #2f6feb;
+  --accent-dim: #d6e4fd;
+  --vault: #a3781f;
+  --vault-dim: #f3e6c6;
+  --danger: #c8352c;
+  --danger-dim: #f8d9d6;
+  --success: #1f8a58;
+
 * { box-sizing: border-box; }
 
 html, body, #root { height: 100%; }

@@ -16,8 +16,10 @@ import NotesPanel from '../components/project/NotesPanel'
 import ActivityPanel from '../components/project/ActivityPanel'
 import TeamPanel from '../components/project/TeamPanel'
 import ShareModal from '../components/project/ShareModal'
+import ProgressPanel from '../components/project/ProgressPanel'
+import HostingPanel from '../components/project/HostingPanel'
 
-const TABS = ['Overview', 'Files', 'URLs', 'Secrets', 'APIs', 'GitHub', 'Database', 'AI', 'Notes', 'Team', 'Activity']
+const TABS = ['Overview', 'Progress', 'Files', 'URLs', 'Secrets', 'APIs', 'GitHub', 'Database', 'Hosting', 'AI', 'Notes', 'Team', 'Activity']
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -95,12 +97,14 @@ export default function ProjectDetail() {
       </div>
 
       {tab === 'Overview' && <Overview project={project} stats={stats} />}
+      {tab === 'Progress' && <ProgressPanel projectId={id} />}
       {tab === 'Files' && <FilesPanel projectId={id} />}
       {tab === 'URLs' && <UrlsPanel projectId={id} />}
       {tab === 'Secrets' && <SecretsPanel projectId={id} />}
       {tab === 'APIs' && <ApisPanel projectId={id} />}
       {tab === 'GitHub' && <GithubPanel projectId={id} />}
       {tab === 'Database' && <DatabasePanel projectId={id} onSwitchTab={(t) => setParams({ tab: t })} />}
+      {tab === 'Hosting' && <HostingPanel projectId={id} />}
       {tab === 'AI' && <AiToolsPanel projectId={id} />}
       {tab === 'Notes' && <NotesPanel projectId={id} />}
       {tab === 'Team' && <TeamPanel projectId={id} ownerId={project.owner_id} />}

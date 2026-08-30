@@ -49,6 +49,34 @@ text, JetBrains Mono for values/code.
 - **Notifications**: an in-app bell with unread count. You're notified when
   someone shares a project, when you're added to a project, and (via a daily
   `pg_cron` job) when a secret is within 14 days of its expiration date
+- **Profile page**: view your details and join date, change password, sign out
+- **Real light/dark theme toggle** in the header (persisted, applied before
+  first paint so there's no flash of the wrong theme)
+- **Global search** (magnifying-glass icon) — searches project names, URLs,
+  APIs, notes, and secret *names* (never values) and jumps straight to the
+  result. Separate from the ⌘K command palette, which is static commands
+- **AI Accounts** — a global tracker for which AI subscriptions you have
+  (ChatGPT, Claude, Copilot, etc.), their plan, and when usage resets
+- **Connections** — a record of which GitHub/GitLab/Vercel/Supabase accounts
+  you use. This is manual bookkeeping, not live OAuth — real one-click
+  account linking would need an OAuth app registered with each provider
+  plus a callback server, which isn't set up
+- **Materials** — a personal file library (uploads, private per user) for
+  reusable assets that aren't tied to one project, separate from each
+  project's own Files tab
+- **Devices** (in Settings) — a best-effort list of devices that have
+  signed in, since Supabase's client SDK has no API to list live sessions.
+  "Sign out of all devices" (also in Settings) is the one that actually
+  revokes every session right now
+- **Per-project Progress tab** — a completion-percent slider plus a
+  checklist of milestones
+- **Per-project Hosting tab** — provider, hosting URL, build/deploy
+  commands, env var notes, last-deploy timestamp
+- **Structured tech stack** on each project — languages, frameworks, and
+  databases as separate tags, plus an SDLC methodology field (Agile/Scrum,
+  Kanban, Waterfall, Lean, DevOps)
+- Project detail now has thirteen tabs: Overview, Progress, Files, URLs,
+  Secrets, APIs, GitHub, Database, Hosting, AI, Notes, Team, Activity
 - **Export / Import**: export a project as a `.zip` (metadata + actual file
   bytes, bundled client-side with JSZip). Secrets are never included —
   there's no toggle, they're simply left out entirely. Import re-creates the
@@ -87,10 +115,12 @@ under Authentication — there's no in-app recovery path yet).
    realtime tables to the `supabase_realtime` publication.
 
    **Already have a DevPro project running?** Don't re-run the full
-   `schema.sql` — it'll error on tables that already exist. Instead run
-   `supabase/migrations/002_profile_onboarding.sql`, which just adds the new
-   profile fields and updates the signup trigger. It's safe to run more than
-   once.
+   `schema.sql` — it'll error on tables that already exist. Instead run, in
+   order:
+   - `supabase/migrations/002_profile_onboarding.sql`
+   - `supabase/migrations/003_extended_features.sql`
+
+   Both are safe to run more than once.
 3. **Deploy the Edge Functions**:
    ```bash
    supabase functions deploy secrets-vault
