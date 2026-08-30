@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-import { Plus, Search, Archive, Star } from 'lucide-react'
+import { Plus, Search, Archive, Star, Upload } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useRealtimeTable } from '../lib/useRealtimeTable'
 import { useAuth } from '../lib/AuthContext'
 import { useToast } from '../lib/ToastContext'
 import { logActivity } from '../lib/activity'
+import { importProject } from '../lib/exportImport'
 import { Badge, EmptyState, Modal } from '../components/ui/Primitives'
 
 const STATUS_TONE = { Planning: 'planning', Active: 'active', Paused: 'paused', Completed: 'default', Archived: 'archived' }
@@ -23,6 +24,8 @@ export default function Projects() {
   const [modalOpen, setModalOpen] = useState(params.get('new') === '1')
   const [form, setForm] = useState({ name: '', description: '', status: 'Planning', tech_stack: '', repository_url: '', production_url: '' })
   const [saving, setSaving] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const importInputRef = useRef(null)
 
   async function load() {
     let q = supabase.from('projects').select('*').order('pinned', { ascending: false }).order('updated_at', { ascending: false })
@@ -70,6 +73,18 @@ export default function Projects() {
     load()
   }
 
+  async function doImport(file) {
+    setImporting(true)
+    try {
+      const project = await importProject(file, user.id)
+      push('Project imported', 'success')
+      navigate(`/projects/${project.id}`)
+    } catch {
+      push('Could not import — check the file is a valid export.', 'danger')
+    }
+    setImporting(false)
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
@@ -77,9 +92,15 @@ export default function Projects() {
           <h1 style={{ fontSize: 20, margin: 0 }}>Projects</h1>
           <p style={{ color: 'var(--text-dim)', margin: '4px 0 0' }}>Everything you're building, organized by project.</p>
         </div>
-        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setModalOpen(true)}>
-          <Plus size={14} /> New Project
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => importInputRef.current?.click()} disabled={importing}>
+            <Upload size={14} /> {importing ? 'Importing…' : 'Import'}
+          </button>
+          <input ref={importInputRef} type="file" accept=".zip" hidden onChange={(e) => e.target.files[0] && doImport(e.target.files[0])} />
+          <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setModalOpen(true)}>
+            <Plus size={14} /> New Project
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>

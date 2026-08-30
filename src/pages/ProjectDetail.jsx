@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, Share2 } from 'lucide-react'
+import { ChevronLeft, Share2, Download } from 'lucide-react'
+import { exportProject } from '../lib/exportImport'
+import { useToast } from '../lib/ToastContext'
 import { supabase } from '../lib/supabaseClient'
 import Overview from '../components/project/Overview'
 import FilesPanel from '../components/project/FilesPanel'
@@ -23,6 +25,8 @@ export default function ProjectDetail() {
   const [project, setProject] = useState(null)
   const [stats, setStats] = useState({ files: null, secrets: null, urls: null, apis: null })
   const [shareOpen, setShareOpen] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const { push } = useToast()
   const tab = params.get('tab') || 'Overview'
 
   async function load() {
@@ -39,6 +43,17 @@ export default function ProjectDetail() {
 
   useEffect(() => { load() }, [id])
 
+  async function doExport() {
+    setExporting(true)
+    try {
+      await exportProject(id)
+      push('Export downloaded', 'success')
+    } catch {
+      push('Export failed.', 'danger')
+    }
+    setExporting(false)
+  }
+
   if (!project) return <p style={{ color: 'var(--text-faint)' }}>Loading…</p>
 
   return (
@@ -46,11 +61,16 @@ export default function ProjectDetail() {
       <Link to="/projects" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--text-dim)', marginBottom: 10 }}>
         <ChevronLeft size={14} /> Projects
       </Link>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <h1 style={{ fontSize: 20, margin: '0 0 12px' }}>{project.name}</h1>
-        <button className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setShareOpen(true)}>
-          <Share2 size={14} /> Share
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={doExport} disabled={exporting}>
+            <Download size={14} /> {exporting ? 'Exporting…' : 'Export'}
+          </button>
+          <button className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setShareOpen(true)}>
+            <Share2 size={14} /> Share
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20, overflowX: 'auto' }}>

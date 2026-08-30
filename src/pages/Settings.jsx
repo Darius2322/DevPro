@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { useToast } from '../lib/ToastContext'
+import MfaSection from '../components/MfaSection'
 
 export default function Settings() {
   const { user, signOutAllDevices } = useAuth()
@@ -19,6 +20,8 @@ export default function Settings() {
         <h2 style={{ fontSize: 14, marginTop: 0 }}>Account</h2>
         <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>{user?.email}</p>
       </section>
+
+      <MfaSection />
 
       <section className="card" style={{ marginBottom: 16 }}>
         <h2 style={{ fontSize: 14, marginTop: 0 }}>Security</h2>

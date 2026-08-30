@@ -47,6 +47,14 @@ text, JetBrains Mono for values/code.
 - **Notifications**: an in-app bell with unread count. You're notified when
   someone shares a project, when you're added to a project, and (via a daily
   `pg_cron` job) when a secret is within 14 days of its expiration date
+- **Export / Import**: export a project as a `.zip` (metadata + actual file
+  bytes, bundled client-side with JSZip). Secrets are never included —
+  there's no toggle, they're simply left out entirely. Import re-creates the
+  bundle as a brand-new project (never overwrites an existing one)
+- **Two-factor authentication**: TOTP via Supabase's built-in MFA — enroll
+  in Settings (QR code + manual key), and it's actually enforced: signing in
+  afterward requires the 6-digit code before the app loads, not just an
+  option that sits unused
 - **Activity**: per-project timeline grouped by day, filterable by resource
   type — metadata only, never secret values or file contents
 - Global URLs and Secrets pages (across all projects) plus per-project views
@@ -58,9 +66,12 @@ text, JetBrains Mono for values/code.
 
 ## Not yet built
 
-Import/export and 2FA/MFA are the two big spec items left. Also smaller:
-folders inside file storage, and a file preview pane. These follow the same
-established patterns — happy to build any of them next.
+Every major section from the original spec now has a first pass. What's
+left is smaller/polish-level: folders inside file storage, a file preview
+pane, project-level security dashboard/score, and the recovery-codes flow
+for 2FA (if you lose your authenticator device, removing the factor
+currently has to be done by disabling it directly in the Supabase dashboard
+under Authentication — there's no in-app recovery path yet).
 
 ## Setup
 
@@ -93,6 +104,7 @@ established patterns — happy to build any of them next.
    npm install
    npm run dev
    ```
+   (this pulls in `jszip`, used for project export/import bundling)
 
 ## Security notes
 
