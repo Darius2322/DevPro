@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, FolderKanban, Link2, KeyRound, Settings, LogOut, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import CommandPalette from './CommandPalette'
+import NotificationsBell from './NotificationsBell'
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -70,7 +71,10 @@ export default function Layout() {
       <CommandPalette />
 
       <main className="scrollbar-thin" style={{ flex: 1, overflowY: 'auto', paddingBottom: 72 }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto', padding: '24px 20px 40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 20px 0' }}>
+          <NotificationsBell />
+        </div>
+        <div style={{ maxWidth: 1080, margin: '0 auto', padding: '12px 20px 40px' }}>
           <Outlet />
         </div>
       </main>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Upload, Download, Trash2, FileText } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { useRealtimeTable } from '../../lib/useRealtimeTable'
 import { logActivity } from '../../lib/activity'
 import { useToast } from '../../lib/ToastContext'
 import { EmptyState, ConfirmDialog } from '../ui/Primitives'
@@ -27,6 +28,7 @@ export default function FilesPanel({ projectId }) {
   }
 
   useEffect(() => { if (projectId) load() }, [projectId])
+  useRealtimeTable('files', projectId, load)
 
   const uploadFiles = useCallback(async (fileList) => {
     setUploading(true)

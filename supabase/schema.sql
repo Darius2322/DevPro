@@ -484,3 +484,115 @@ create policy "project-files: delete if project access" on storage.objects
     bucket_id = 'project-files'
     and public.has_project_access((storage.foldername(name))[1]::uuid)
   );
+
+-- ─────────────────────────────────────────────────────────────
+-- NOTIFICATIONS
+-- ─────────────────────────────────────────────────────────────
+create table notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  project_id uuid references projects (id) on delete cascade,
+  type text not null, -- 'secret_expiring' | 'project_shared' | 'member_added' | 'security'
+  title text not null,
+  body text,
+  read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index notifications_user_idx on notifications (user_id, read, created_at desc);
+
+alter table notifications enable row level security;
+
+create policy "notifications: select own" on notifications
+  for select using (user_id = auth.uid());
+
+create policy "notifications: update own (mark read)" on notifications
+  for update using (user_id = auth.uid());
+
+create policy "notifications: delete own" on notifications
+  for delete using (user_id = auth.uid());
+
+-- Notifications are otherwise only inserted by triggers/scheduled functions
+-- below (security definer), never directly by client inserts.
+
+-- Notify every project member when a share link is created for their project.
+create function public.notify_on_share_created()
+returns trigger as $$
+begin
+  insert into notifications (user_id, project_id, type, title, body)
+  select
+    m.user_id, new.project_id, 'project_shared', 'Share link created',
+    (select name from projects where id = new.project_id)
+  from (
+    select owner_id as user_id from projects where id = new.project_id
+    union
+    select user_id from project_members where project_id = new.project_id
+  ) m
+  where m.user_id <> new.created_by;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_share_created
+  after insert on shares
+  for each row execute procedure public.notify_on_share_created();
+
+-- Notify a user when they're added to a project.
+create function public.notify_on_member_added()
+returns trigger as $$
+begin
+  insert into notifications (user_id, project_id, type, title, body)
+  values (new.user_id, new.project_id, 'member_added', 'Added to a project',
+    (select name from projects where id = new.project_id) || ' — role: ' || new.role);
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_member_added
+  after insert on project_members
+  for each row execute procedure public.notify_on_member_added();
+
+-- Scheduled check for secrets nearing expiration (run daily via pg_cron).
+-- Only notifies once per secret per expiry window (tracked via notified_expiring_at).
+alter table secrets add column if not exists notified_expiring_at timestamptz;
+
+create function public.check_expiring_secrets()
+returns void as $$
+begin
+  insert into notifications (user_id, project_id, type, title, body)
+  select p.owner_id, s.project_id, 'secret_expiring', 'Secret expiring soon',
+         s.name || ' expires ' || s.expires_at::text
+  from secrets s
+  join projects p on p.id = s.project_id
+  where s.expires_at is not null
+    and s.expires_at <= (current_date + interval '14 days')
+    and s.expires_at >= current_date
+    and s.notified_expiring_at is null;
+
+  update secrets
+  set notified_expiring_at = now()
+  where expires_at is not null
+    and expires_at <= (current_date + interval '14 days')
+    and expires_at >= current_date
+    and notified_expiring_at is null;
+end;
+$$ language plpgsql security definer;
+
+-- Requires the pg_cron extension (available on Supabase — enable it under
+-- Database > Extensions if this fails). Runs once a day at 08:00 UTC.
+create extension if not exists pg_cron;
+select cron.schedule('check-expiring-secrets', '0 8 * * *', 'select public.check_expiring_secrets();');
+
+-- ─────────────────────────────────────────────────────────────
+-- REALTIME: expose the tables the UI subscribes to for live updates.
+-- Row-level security still applies to realtime — a user only receives
+-- change events for rows they could otherwise SELECT.
+-- ─────────────────────────────────────────────────────────────
+alter publication supabase_realtime add table projects;
+alter publication supabase_realtime add table files;
+alter publication supabase_realtime add table urls;
+alter publication supabase_realtime add table apis;
+alter publication supabase_realtime add table notes;
+alter publication supabase_realtime add table secrets;
+alter publication supabase_realtime add table activity_logs;
+alter publication supabase_realtime add table notifications;

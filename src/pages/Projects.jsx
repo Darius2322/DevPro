@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Plus, Search, Archive, Star } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { useRealtimeTable } from '../lib/useRealtimeTable'
 import { useAuth } from '../lib/AuthContext'
 import { useToast } from '../lib/ToastContext'
 import { logActivity } from '../lib/activity'
@@ -31,6 +32,7 @@ export default function Projects() {
   }
 
   useEffect(() => { load() }, [showArchived])
+  useRealtimeTable('projects', null, load)
 
   const filtered = useMemo(() => {
     if (!projects) return []

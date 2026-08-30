@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ExternalLink, Plus, Trash2, Pencil } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { useRealtimeTable } from '../../lib/useRealtimeTable'
 import { logActivity } from '../../lib/activity'
 import { useToast } from '../../lib/ToastContext'
 import { Badge, CopyButton, EmptyState, Modal, ConfirmDialog } from '../ui/Primitives'
@@ -26,6 +27,7 @@ export default function UrlsPanel({ projectId, projects }) {
   }
 
   useEffect(() => { load() }, [projectId])
+  useRealtimeTable('urls', projectId, load)
 
   function openCreate() {
     setEditing(null)

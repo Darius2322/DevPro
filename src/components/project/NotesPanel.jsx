@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Trash2, Pencil } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { useRealtimeTable } from '../../lib/useRealtimeTable'
 import { logActivity } from '../../lib/activity'
 import { useToast } from '../../lib/ToastContext'
 import { EmptyState, Modal, ConfirmDialog } from '../ui/Primitives'
@@ -21,6 +22,7 @@ export default function NotesPanel({ projectId }) {
   }
 
   useEffect(() => { load() }, [projectId])
+  useRealtimeTable('notes', projectId, load)
 
   function openCreate() { setEditing(null); setForm(emptyForm); setModalOpen(true) }
   function openEdit(n) { setEditing(n); setForm({ title: n.title, body: n.body ?? '' }); setModalOpen(true) }

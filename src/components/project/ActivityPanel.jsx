@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Clock } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { useRealtimeTable } from '../../lib/useRealtimeTable'
 import { EmptyState } from '../ui/Primitives'
 
 const FILTERS = ['All', 'Files', 'Secrets', 'URLs', 'APIs', 'GitHub', 'Database', 'AI', 'Notes']
@@ -20,6 +21,10 @@ export default function ActivityPanel({ projectId }) {
   const [filter, setFilter] = useState('All')
 
   useEffect(() => {
+    load()
+  }, [projectId])
+
+  function load() {
     supabase
       .from('activity_logs')
       .select('id, action, detail, created_at')
@@ -27,7 +32,9 @@ export default function ActivityPanel({ projectId }) {
       .order('created_at', { ascending: false })
       .limit(200)
       .then(({ data }) => setLogs(data ?? []))
-  }, [projectId])
+  }
+
+  useRealtimeTable('activity_logs', projectId, load)
 
   const filtered = logs?.filter((l) => matchesFilter(l.action, filter)) ?? []
 

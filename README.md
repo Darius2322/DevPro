@@ -39,6 +39,14 @@ text, JetBrains Mono for values/code.
   private notes are never includable — there's no toggle for them, by
   design — and a Supabase Edge Function (`share-manage`) validates the
   token/password server-side before returning anything
+- **Real-time updates**: Files, URLs, Secrets (metadata only), APIs, Notes,
+  Activity, and the Projects list all subscribe to Supabase Realtime —
+  changes from teammates show up without a refresh. RLS still applies to
+  realtime events, so you only ever receive updates for rows you could
+  already see
+- **Notifications**: an in-app bell with unread count. You're notified when
+  someone shares a project, when you're added to a project, and (via a daily
+  `pg_cron` job) when a secret is within 14 days of its expiration date
 - **Activity**: per-project timeline grouped by day, filterable by resource
   type — metadata only, never secret values or file contents
 - Global URLs and Secrets pages (across all projects) plus per-project views
@@ -50,18 +58,20 @@ text, JetBrains Mono for values/code.
 
 ## Not yet built
 
-Notifications, real-time collaboration (live updates without a refresh),
-import/export, 2FA/MFA, folders inside file storage, file preview pane.
-These follow the same panel+table+RLS pattern already established — happy
-to build any of them next.
+Import/export and 2FA/MFA are the two big spec items left. Also smaller:
+folders inside file storage, and a file preview pane. These follow the same
+established patterns — happy to build any of them next.
 
 ## Setup
 
 1. **Create a Supabase project** at supabase.com.
 2. **Run the schema**: open the SQL editor and run `supabase/schema.sql`.
    This creates all tables (projects, files, secrets, urls, apis,
-   github_repositories, databases, ai_usage, notes, activity_logs), RLS
-   policies, and the private `project-files` storage bucket.
+   github_repositories, databases, ai_usage, notes, shares, notifications,
+   activity_logs), RLS policies, the private `project-files` storage bucket,
+   the daily secret-expiry check (`pg_cron` — enable that extension under
+   Database > Extensions if the schema run errors on it), and adds the
+   realtime tables to the `supabase_realtime` publication.
 3. **Deploy the Edge Functions**:
    ```bash
    supabase functions deploy secrets-vault

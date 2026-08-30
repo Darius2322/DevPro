@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Eye, EyeOff, Copy, Plus, Trash2, RefreshCw, AlertTriangle } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { useRealtimeTable } from '../../lib/useRealtimeTable'
 import { secretsVault } from '../../lib/secretsVault'
 import { logActivity } from '../../lib/activity'
 import { useToast } from '../../lib/ToastContext'
@@ -41,6 +42,7 @@ export default function SecretsPanel({ projectId, projects }) {
   }
 
   useEffect(() => { load() }, [projectId])
+  useRealtimeTable('secrets', projectId, load)
 
   function openCreate() {
     setForm({ name: '', type: 'API Key', environment: 'Production', description: '', expires_at: '', value: '', project_id: projectId ?? '' })
