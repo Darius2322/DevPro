@@ -162,9 +162,18 @@ alter table devices enable row level security;
 drop policy if exists "devices: all own" on devices;
 create policy "devices: all own" on devices for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
-alter publication supabase_realtime add table project_milestones;
-alter publication supabase_realtime add table hosting;
-alter publication supabase_realtime add table ai_accounts;
-alter publication supabase_realtime add table connections;
-alter publication supabase_realtime add table materials;
-alter publication supabase_realtime add table devices;
+-- Safe to re-run: skips any table already in the publication instead of
+-- erroring with "already member of publication".
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['project_milestones', 'hosting', 'ai_accounts', 'connections', 'materials', 'devices']
+  loop
+    begin
+      execute format('alter publication supabase_realtime add table %I', t);
+    exception when duplicate_object then
+      null;
+    end;
+  end loop;
+end $$;

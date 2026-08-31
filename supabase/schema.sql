@@ -598,14 +598,19 @@ select cron.schedule('check-expiring-secrets', '0 8 * * *', 'select public.check
 -- Row-level security still applies to realtime — a user only receives
 -- change events for rows they could otherwise SELECT.
 -- ─────────────────────────────────────────────────────────────
-alter publication supabase_realtime add table projects;
-alter publication supabase_realtime add table files;
-alter publication supabase_realtime add table urls;
-alter publication supabase_realtime add table apis;
-alter publication supabase_realtime add table notes;
-alter publication supabase_realtime add table secrets;
-alter publication supabase_realtime add table activity_logs;
-alter publication supabase_realtime add table notifications;
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['projects', 'files', 'urls', 'apis', 'notes', 'secrets', 'activity_logs', 'notifications']
+  loop
+    begin
+      execute format('alter publication supabase_realtime add table %I', t);
+    exception when duplicate_object then
+      null;
+    end;
+  end loop;
+end $$;
 -- Run this against your existing DevPro Supabase project (in addition to
 -- 002_profile_onboarding.sql, if you haven't already). Safe to run more
 -- than once — every statement is idempotent or uses IF NOT EXISTS.
@@ -770,9 +775,16 @@ alter table devices enable row level security;
 drop policy if exists "devices: all own" on devices;
 create policy "devices: all own" on devices for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
-alter publication supabase_realtime add table project_milestones;
-alter publication supabase_realtime add table hosting;
-alter publication supabase_realtime add table ai_accounts;
-alter publication supabase_realtime add table connections;
-alter publication supabase_realtime add table materials;
-alter publication supabase_realtime add table devices;
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['project_milestones', 'hosting', 'ai_accounts', 'connections', 'materials', 'devices']
+  loop
+    begin
+      execute format('alter publication supabase_realtime add table %I', t);
+    exception when duplicate_object then
+      null;
+    end;
+  end loop;
+end $$;
