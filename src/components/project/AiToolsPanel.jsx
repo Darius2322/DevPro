@@ -27,7 +27,7 @@ export default function AiToolsPanel({ projectId }) {
   async function save(e) {
     e.preventDefault()
     const { error } = await supabase.from('ai_usage').insert({ ...form, project_id: projectId })
-    if (error) return push('Could not save entry.', 'danger')
+    if (error) return push(error.message || 'Could not save entry.', 'danger')
     await logActivity({ projectId, action: `${form.provider} usage logged`, detail: form.purpose || null })
     push('Logged', 'success')
     setModalOpen(false)

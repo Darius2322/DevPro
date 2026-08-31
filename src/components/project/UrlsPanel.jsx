@@ -45,11 +45,11 @@ export default function UrlsPanel({ projectId, projects }) {
     e.preventDefault()
     if (editing) {
       const { error } = await supabase.from('urls').update(form).eq('id', editing.id)
-      if (error) return push('Could not update URL.', 'danger')
+      if (error) return push(error.message || 'Could not update URL.', 'danger')
       await logActivity({ projectId: form.project_id, action: 'URL updated', detail: form.name })
     } else {
       const { error } = await supabase.from('urls').insert(form)
-      if (error) return push('Could not add URL.', 'danger')
+      if (error) return push(error.message || 'Could not add URL.', 'danger')
       await logActivity({ projectId: form.project_id, action: 'URL added', detail: form.name })
     }
     push(editing ? 'URL updated' : 'URL added', 'success')

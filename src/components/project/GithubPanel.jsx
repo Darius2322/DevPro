@@ -45,7 +45,7 @@ export default function GithubPanel({ projectId }) {
       ? await supabase.from('github_repositories').update(payload).eq('id', record.id)
       : await supabase.from('github_repositories').insert(payload)
     setSaving(false)
-    if (error) return push('Could not save GitHub info.', 'danger')
+    if (error) return push(error.message || 'Could not save GitHub info.', 'danger')
     await logActivity({ projectId, action: 'GitHub info updated' })
     push('Saved', 'success')
     load()

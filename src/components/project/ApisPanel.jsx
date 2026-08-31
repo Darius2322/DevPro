@@ -60,11 +60,11 @@ export default function ApisPanel({ projectId }) {
     const payload = { ...form, project_id: projectId, api_key_secret_id: apiKeySecretId || null }
     if (editing) {
       const { error } = await supabase.from('apis').update(payload).eq('id', editing.id)
-      if (error) return push('Could not update API.', 'danger')
+      if (error) return push(error.message || 'Could not update API.', 'danger')
       await logActivity({ projectId, action: 'API updated', detail: form.name })
     } else {
       const { error } = await supabase.from('apis').insert(payload)
-      if (error) return push('Could not add API.', 'danger')
+      if (error) return push(error.message || 'Could not add API.', 'danger')
       await logActivity({ projectId, action: 'API added', detail: form.name })
     }
     push(editing ? 'API updated' : 'API added', 'success')

@@ -38,7 +38,7 @@ export default function AiAccounts() {
     const { error } = editing
       ? await supabase.from('ai_accounts').update(payload).eq('id', editing.id)
       : await supabase.from('ai_accounts').insert(payload)
-    if (error) return push('Could not save.', 'danger')
+    if (error) return push(error.message || 'Could not save.', 'danger')
     push(editing ? 'Updated' : 'Added', 'success')
     setModalOpen(false)
     load()

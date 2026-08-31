@@ -31,11 +31,11 @@ export default function NotesPanel({ projectId }) {
     e.preventDefault()
     if (editing) {
       const { error } = await supabase.from('notes').update(form).eq('id', editing.id)
-      if (error) return push('Could not update note.', 'danger')
+      if (error) return push(error.message || 'Could not update note.', 'danger')
     } else {
       const { data: userData } = await supabase.auth.getUser()
       const { error } = await supabase.from('notes').insert({ ...form, project_id: projectId, created_by: userData.user.id })
-      if (error) return push('Could not create note.', 'danger')
+      if (error) return push(error.message || 'Could not create note.', 'danger')
     }
     await logActivity({ projectId, action: editing ? 'Note updated' : 'Note added', detail: form.title })
     push('Saved', 'success')

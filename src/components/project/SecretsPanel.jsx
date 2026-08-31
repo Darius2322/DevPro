@@ -59,8 +59,8 @@ export default function SecretsPanel({ projectId, projects }) {
       push('Secret saved', 'success')
       setModalOpen(false)
       load()
-    } catch {
-      push('Could not save secret.', 'danger')
+    } catch (error) {
+      push(error.message || 'Could not save secret.', 'danger')
     }
     setSaving(false)
   }
@@ -81,8 +81,8 @@ export default function SecretsPanel({ projectId, projects }) {
       await logActivity({ projectId: s?.project_id, action: 'Secret revealed', detail: s?.name })
       // Auto-hide again after 20s so it doesn't stay exposed on screen.
       setTimeout(() => setRevealed((r) => { const c = { ...r }; delete c[secretId]; return c }), 20000)
-    } catch {
-      push('Could not reveal secret.', 'danger')
+    } catch (error) {
+      push(error.message || 'Could not reveal secret.', 'danger')
     }
   }
 
@@ -94,8 +94,8 @@ export default function SecretsPanel({ projectId, projects }) {
       const s = secrets.find((x) => x.id === secretId)
       await logActivity({ projectId: s?.project_id, action: 'Secret copied', detail: s?.name })
       push('Copied to clipboard')
-    } catch {
-      push('Could not copy secret.', 'danger')
+    } catch (error) {
+      push(error.message || 'Could not copy secret.', 'danger')
     }
   }
 

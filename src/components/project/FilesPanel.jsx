@@ -57,7 +57,7 @@ export default function FilesPanel({ projectId }) {
 
   async function downloadFile(f) {
     const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(f.storage_path, 60)
-    if (error) return push('Could not generate download link.', 'danger')
+    if (error) return push(error.message || 'Could not generate download link.', 'danger')
     await logActivity({ projectId, action: 'File downloaded', detail: f.name })
     window.open(data.signedUrl, '_blank')
   }

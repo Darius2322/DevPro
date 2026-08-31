@@ -29,8 +29,8 @@ export default function ShareModal({ open, onClose, projectId }) {
       push('Share link created', 'success')
       setPassword('')
       load()
-    } catch {
-      push('Could not create share link.', 'danger')
+    } catch (error) {
+      push(error.message || 'Could not create share link.', 'danger')
     }
     setCreating(false)
   }

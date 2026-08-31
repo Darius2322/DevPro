@@ -34,7 +34,7 @@ export default function Profile() {
     setSaving(true)
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     setSaving(false)
-    if (error) return push('Could not update password.', 'danger')
+    if (error) return push(error.message || 'Could not update password.', 'danger')
     push('Password updated', 'success')
     setNewPassword('')
     setConfirmPassword('')

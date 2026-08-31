@@ -68,7 +68,7 @@ export default function Projects() {
       .single()
     setSaving(false)
     if (error) {
-      push('Could not create project.', 'danger')
+      push(error.message || 'Could not create project.', 'danger')
       return
     }
     await logActivity({ projectId: data.id, action: 'Project created', detail: data.name })
@@ -90,8 +90,8 @@ export default function Projects() {
       const project = await importProject(file, user.id)
       push('Project imported', 'success')
       navigate(`/projects/${project.id}`)
-    } catch {
-      push('Could not import — check the file is a valid export.', 'danger')
+    } catch (error) {
+      push(error.message || 'Could not import — check the file is a valid export.', 'danger')
     }
     setImporting(false)
   }

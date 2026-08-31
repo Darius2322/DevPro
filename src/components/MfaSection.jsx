@@ -24,7 +24,7 @@ export default function MfaSection() {
     setEnrolling(true)
     const { data, error } = await mfa.enroll()
     if (error) {
-      push('Could not start enrollment.', 'danger')
+      push(error.message || 'Could not start enrollment.', 'danger')
       setEnrolling(false)
       return
     }
@@ -53,7 +53,7 @@ export default function MfaSection() {
 
   async function remove(factorId) {
     const { error } = await mfa.unenroll(factorId)
-    if (error) return push('Could not remove.', 'danger')
+    if (error) return push(error.message || 'Could not remove.', 'danger')
     push('Two-factor authentication removed')
     load()
   }

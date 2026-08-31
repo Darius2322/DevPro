@@ -36,7 +36,7 @@ export default function Connections() {
     const { error } = editing
       ? await supabase.from('connections').update(payload).eq('id', editing.id)
       : await supabase.from('connections').insert(payload)
-    if (error) return push('Could not save.', 'danger')
+    if (error) return push(error.message || 'Could not save.', 'danger')
     push(editing ? 'Updated' : 'Added', 'success')
     setModalOpen(false)
     load()

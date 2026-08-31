@@ -34,7 +34,7 @@ export default function HostingPanel({ projectId }) {
       ? await supabase.from('hosting').update(payload).eq('id', record.id)
       : await supabase.from('hosting').insert(payload)
     setSaving(false)
-    if (error) return push('Could not save hosting info.', 'danger')
+    if (error) return push(error.message || 'Could not save hosting info.', 'danger')
     await logActivity({ projectId, action: 'Hosting info updated' })
     push('Saved', 'success')
     load()

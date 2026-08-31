@@ -105,6 +105,11 @@ text, JetBrains Mono for values/code.
 - Login/signup cards are now more rounded
 - Profile now shows last-visited time, the current device, and a compact
   recent-activity feed (with a link to the full History page)
+- **Every error toast across the app now shows Supabase's actual error
+  message** instead of a generic "Could not save/create/update..." — this
+  was making bugs like the project-creation failure impossible to diagnose
+  remotely. Toasts also now wrap long messages and give errors more time
+  on screen (6s vs 2.6s for normal toasts), and moved to the top-right
 - **Export / Import**: export a project as a `.zip` (metadata + actual file
   bytes, bundled client-side with JSZip). Secrets are never included —
   there's no toggle, they're simply left out entirely. Import re-creates the

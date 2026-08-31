@@ -35,7 +35,7 @@ export default function DatabasePanel({ projectId, onSwitchTab }) {
       ? await supabase.from('databases').update(payload).eq('id', record.id)
       : await supabase.from('databases').insert(payload)
     setSaving(false)
-    if (error) return push('Could not save database info.', 'danger')
+    if (error) return push(error.message || 'Could not save database info.', 'danger')
     await logActivity({ projectId, action: 'Database info updated' })
     push('Saved', 'success')
     load()

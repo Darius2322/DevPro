@@ -10,7 +10,7 @@ export function ToastProvider({ children }) {
     setToasts((t) => [...t, { id, message, tone }])
     setTimeout(() => {
       setToasts((t) => t.filter((x) => x.id !== id))
-    }, 2600)
+    }, tone === 'danger' ? 6000 : 2600)
   }, [])
 
   return (
@@ -38,6 +38,9 @@ export function ToastProvider({ children }) {
               padding: '8px 14px',
               borderRadius: 'var(--radius)',
               fontSize: 13,
+              maxWidth: 320,
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
               boxShadow: '0 4px 16px rgba(0,0,0,0.35)'
             }}
           >
