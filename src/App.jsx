@@ -15,6 +15,8 @@ import Profile from './pages/Profile'
 import AiAccounts from './pages/AiAccounts'
 import Connections from './pages/Connections'
 import Materials from './pages/Materials'
+import History from './pages/History'
+import Devices from './pages/Devices'
 
 export default function App() {
   return (
@@ -38,6 +40,8 @@ export default function App() {
         <Route path="/ai-accounts" element={<AiAccounts />} />
         <Route path="/connections" element={<Connections />} />
         <Route path="/materials" element={<Materials />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/devices" element={<Devices />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
       </Route>

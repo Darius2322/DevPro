@@ -77,6 +77,21 @@ text, JetBrains Mono for values/code.
   Kanban, Waterfall, Lean, DevOps)
 - Project detail now has thirteen tabs: Overview, Progress, Files, URLs,
   Secrets, APIs, GitHub, Database, Hosting, AI, Notes, Team, Activity
+- **Fixed a real bug**: the light theme CSS block added in the previous
+  round was missing a closing brace, which corrupted the entire stylesheet
+  in a way that rendered inconsistently across page loads (sometimes fully
+  styled, sometimes raw unstyled HTML — serif fonts, underlined blue links,
+  white background). This is what "mixed views" was. Fixed.
+- **Header account menu**: your avatar (initials, generated from your name
+  or email) now lives in the top-right corner on every screen size, with a
+  dropdown for Profile, Devices, and Sign out
+- **History** — a new page showing activity across *all* your projects
+  (filterable by project), separate from each project's own Activity tab
+- **Devices** — pulled out of Settings into its own page
+- Mobile's "More" drawer buttons were restyled as proper tappable rows
+  (bordered cards, clear active state) instead of plain list links, and the
+  header/sidebar layout got tightened up to avoid horizontal overflow on
+  narrow screens
 - **Export / Import**: export a project as a `.zip` (metadata + actual file
   bytes, bundled client-side with JSZip). Secrets are never included —
   there's no toggle, they're simply left out entirely. Import re-creates the
