@@ -73,7 +73,13 @@ export default function Layout() {
       <CommandPalette />
 
       <main className="scrollbar-thin" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', paddingBottom: isMobile ? 76 : 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6, padding: '12px 16px 0', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+            position: 'sticky', top: 0, zIndex: 500, background: 'var(--bg)',
+            padding: '12px 16px', borderBottom: '1px solid var(--border)'
+          }}
+        >
           <GlobalSearchButton />
           <ThemeToggle />
           <NotificationsBell />

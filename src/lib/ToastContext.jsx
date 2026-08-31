@@ -19,13 +19,13 @@ export function ToastProvider({ children }) {
       <div
         style={{
           position: 'fixed',
-          bottom: 20,
-          left: '50%',
-          transform: 'translateX(-50%)',
+          top: 16,
+          right: 16,
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'flex-end',
           gap: 8,
-          zIndex: 1000
+          zIndex: 1200
         }}
       >
         {toasts.map((t) => (
