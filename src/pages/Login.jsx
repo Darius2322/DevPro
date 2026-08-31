@@ -36,7 +36,7 @@ export default function Login() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <form onSubmit={onSubmit} className="card" style={{ width: '100%', maxWidth: 360 }}>
+      <form onSubmit={onSubmit} className="card" style={{ width: '100%', maxWidth: 360, borderRadius: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
           <ShieldCheck size={20} color="var(--vault)" />
           <strong style={{ fontSize: 16 }}>DevPro</strong>
@@ -49,6 +49,9 @@ export default function Login() {
           <label htmlFor="password">Password</label>
           <PasswordInput id="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
+        <p style={{ textAlign: 'right', fontSize: 12, marginTop: -10, marginBottom: 4 }}>
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
         {error && <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: -6 }}>{error}</p>}
         <button className="btn-primary" style={{ width: '100%', marginTop: 4 }} disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}

@@ -43,7 +43,7 @@ export default function Signup() {
   if (done) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <div className="card" style={{ maxWidth: 380, textAlign: 'center' }}>
+        <div className="card" style={{ maxWidth: 380, textAlign: 'center', borderRadius: 20 }}>
           <strong>Check your email</strong>
           <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>
             We sent a confirmation link to {email}. Confirm your address, then sign in — you'll get a quick
@@ -57,7 +57,7 @@ export default function Signup() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <form onSubmit={onSubmit} className="card" style={{ width: '100%', maxWidth: 380 }}>
+      <form onSubmit={onSubmit} className="card" style={{ width: '100%', maxWidth: 380, borderRadius: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
           <ShieldCheck size={20} color="var(--vault)" />
           <strong style={{ fontSize: 16 }}>Create your DevPro account</strong>

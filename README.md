@@ -92,6 +92,19 @@ text, JetBrains Mono for values/code.
   (bordered cards, clear active state) instead of plain list links, and the
   header/sidebar layout got tightened up to avoid horizontal overflow on
   narrow screens
+- **Fixed another real bug**: the desktop sidebar and mobile bottom nav
+  were both showing at once (or the sidebar persisting on phones) because
+  they set `display: flex` as an inline style, and inline styles always
+  beat CSS media-query rules regardless of selector specificity. Switched
+  to JS-driven responsive rendering (`useMediaQuery`) instead of fighting
+  that — now exactly one nav renders, based on actual screen width
+- Added a favicon (shield/lock mark matching the app's branding)
+- **Forgot password**: a link on the sign-in page sends a reset email via
+  Supabase; `/reset-password` handles the email link and lets you set a
+  new password
+- Login/signup cards are now more rounded
+- Profile now shows last-visited time, the current device, and a compact
+  recent-activity feed (with a link to the full History page)
 - **Export / Import**: export a project as a `.zip` (metadata + actual file
   bytes, bundled client-side with JSZip). Secrets are never included —
   there's no toggle, they're simply left out entirely. Import re-creates the
@@ -119,6 +132,13 @@ currently has to be done by disabling it directly in the Supabase dashboard
 under Authentication — there's no in-app recovery path yet).
 
 ## Setup
+
+0. **Password reset redirect**: in Supabase, go to **Authentication → URL
+   Configuration** and make sure your deployed domain (e.g.
+   `https://dev-pro-blush.vercel.app`) is in the **Redirect URLs** allowlist,
+   including the `/reset-password` path if it's listed there explicitly.
+   Without this, "Forgot password" emails will send but the link will be
+   rejected.
 
 1. **Create a Supabase project** at supabase.com.
 2. **Run the schema**: open the SQL editor and run `supabase/schema.sql`.

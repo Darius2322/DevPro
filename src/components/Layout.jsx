@@ -5,6 +5,7 @@ import {
   Bot, Plug, FolderOpen, MoreHorizontal, X, Clock, Laptop
 } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
+import { useMediaQuery } from '../lib/useMediaQuery'
 import CommandPalette from './CommandPalette'
 import NotificationsBell from './NotificationsBell'
 import GlobalSearchButton from './GlobalSearchButton'
@@ -41,34 +42,37 @@ function sidebarLinkStyle({ isActive }) {
 export default function Layout() {
   const { signOut } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
+  // JS-driven, not CSS media queries — avoids fights with inline `display`
+  // styles, which always win over stylesheet rules regardless of selector.
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {/* Desktop sidebar */}
-      <aside
-        className="scrollbar-thin"
-        style={{ width: 220, flexShrink: 0, borderRight: '1px solid var(--border)', padding: 16, display: 'flex', flexDirection: 'column', gap: 4 }}
-        data-desktop-only
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px 20px' }}>
-          <ShieldCheck size={18} color="var(--vault)" />
-          <strong style={{ fontSize: 14 }}>DevPro</strong>
-        </div>
-        {ALL_NAV.map(({ to, label, icon: Icon, end }) => (
-          <NavLink key={to} to={to} end={end} style={sidebarLinkStyle}>
-            <Icon size={16} />
-            {label}
-          </NavLink>
-        ))}
-        <div style={{ flex: 1 }} />
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, fontSize: 12, color: 'var(--text-faint)', textAlign: 'center' }}>
-          Press <kbd style={{ border: '1px solid var(--border-strong)', borderRadius: 4, padding: '1px 5px' }}>⌘K</kbd> for commands
-        </div>
-      </aside>
+      {!isMobile && (
+        <aside
+          className="scrollbar-thin"
+          style={{ width: 220, flexShrink: 0, borderRight: '1px solid var(--border)', padding: 16, display: 'flex', flexDirection: 'column', gap: 4 }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px 20px' }}>
+            <ShieldCheck size={18} color="var(--vault)" />
+            <strong style={{ fontSize: 14 }}>DevPro</strong>
+          </div>
+          {ALL_NAV.map(({ to, label, icon: Icon, end }) => (
+            <NavLink key={to} to={to} end={end} style={sidebarLinkStyle}>
+              <Icon size={16} />
+              {label}
+            </NavLink>
+          ))}
+          <div style={{ flex: 1 }} />
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, fontSize: 12, color: 'var(--text-faint)', textAlign: 'center' }}>
+            Press <kbd style={{ border: '1px solid var(--border-strong)', borderRadius: 4, padding: '1px 5px' }}>⌘K</kbd> for commands
+          </div>
+        </aside>
+      )}
 
       <CommandPalette />
 
-      <main className="scrollbar-thin" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 72 }}>
+      <main className="scrollbar-thin" style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', paddingBottom: isMobile ? 76 : 0 }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6, padding: '12px 16px 0', flexWrap: 'wrap' }}>
           <GlobalSearchButton />
           <ThemeToggle />
@@ -80,40 +84,38 @@ export default function Layout() {
         </div>
       </main>
 
-      {/* Mobile bottom nav */}
-      <nav
-        data-mobile-only
-        style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-around',
-          background: 'var(--surface)', borderTop: '1px solid var(--border)',
-          padding: '6px 4px calc(6px + env(safe-area-inset-bottom))'
-        }}
-      >
-        {PRIMARY_NAV.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to} to={to} end={end}
-            style={({ isActive }) => ({
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px',
-              color: isActive ? 'var(--accent)' : 'var(--text-faint)', fontSize: 10, minWidth: 56
-            })}
-          >
-            <Icon size={18} />
-            {label}
-          </NavLink>
-        ))}
-        <button
-          onClick={() => setMoreOpen(true)}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', color: 'var(--text-faint)', fontSize: 10, minWidth: 56, background: 'none', border: 'none' }}
+      {isMobile && (
+        <nav
+          style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-around',
+            background: 'var(--surface)', borderTop: '1px solid var(--border)',
+            padding: '6px 4px calc(6px + env(safe-area-inset-bottom))'
+          }}
         >
-          <MoreHorizontal size={18} />
-          More
-        </button>
-      </nav>
+          {PRIMARY_NAV.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to} to={to} end={end}
+              style={({ isActive }) => ({
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px',
+                color: isActive ? 'var(--accent)' : 'var(--text-faint)', fontSize: 10, minWidth: 56
+              })}
+            >
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
+          <button
+            onClick={() => setMoreOpen(true)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 10px', color: 'var(--text-faint)', fontSize: 10, minWidth: 56, background: 'none', border: 'none' }}
+          >
+            <MoreHorizontal size={18} />
+            More
+          </button>
+        </nav>
+      )}
 
-      {/* Mobile "More" drawer */}
-      {moreOpen && (
+      {isMobile && moreOpen && (
         <div
-          data-mobile-only
           onMouseDown={(e) => e.target === e.currentTarget && setMoreOpen(false)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(8,9,12,0.6)', zIndex: 1000 }}
         >
@@ -147,14 +149,6 @@ export default function Layout() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @media (min-width: 769px) { [data-mobile-only] { display: none; } }
-        @media (max-width: 768px) {
-          [data-desktop-only] { display: none; }
-          main { padding-bottom: 76px; }
-        }
-      `}</style>
     </div>
   )
 }
